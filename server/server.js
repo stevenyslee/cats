@@ -1,4 +1,5 @@
 const { registerCat, randomCat, checkPassword, updateLastDate } = require('./../database/index.js');
+const { cert } = require('./config.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
@@ -51,14 +52,22 @@ app.put('/cat/login', (req, res) => {
       if (err) return res.send('Password Incorrect');
       updateLastDate(req.body.username, (err, resDate) => {
         if (err) return res.send(err);
-        return res.send('send token');
+        let token = jwt.sign({ username: req.body.username, password: response[0].password }, cert, { algorithm: 'HS256', expiresIn: 86400 }, (err, token) => {
+          return res.status(200).send({ auth: true, token });
+        });
       });
     })
   });
 });
 
 
-app.get('/cats', (req, res) => res.send('Hello World!'));
+app.get('/cats', (req, res) => {
+  let [ bearer, token ] = req.headers.authorization.split(' ');
+  jwt.verify(token, cert, (err, decoded) => {
+    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+    res.status(200).send(decoded);
+  });
+});
 
 
 app.get('/cats/random', (req, res) => {

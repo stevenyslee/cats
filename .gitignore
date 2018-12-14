@@ -1,4 +1,4 @@
 node_modules
 *.DS_Store
 database/config.js
-servcer/config.js
+server/config.js
