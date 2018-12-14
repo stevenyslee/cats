@@ -13,7 +13,7 @@ CREATE TABLE cats (
   lastSeenAt DATE NOT NULL,
   name varchar(50) NOT NULL,
   username varchar(50) NOT NULL,
-  password varchar(50) NOT NULL,
+  password varchar(150) NOT NULL,
   weight decimal(5,2) NOT NULL,
   PRIMARY KEY (ID)
 );
