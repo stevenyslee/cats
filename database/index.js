@@ -49,9 +49,44 @@ const updateLastDate = ({ username }, callback) => {
   });
 };
 
+const selectCats = ({ id, name, username }, callback) => {
+  let query = `SELECT birthdate, breed, username, id, imageUrl, name FROM cats`;
+  if (id || name || username) {
+    query += ' WHERE';
+    if (id) {
+      query += ` id = '${id}'`;
+    } else {
+      query += ` id IS NOT NULL`;
+    }
+
+    if (name) {
+      query += ` AND name = '${name}'`;
+    } else {
+      query += ` AND name IS NOT NULL`;
+    }
+
+    if (username) {
+      query += ` AND username = '${username}'`
+    } else {
+      query += ` AND username IS NOT NULL`;
+    }
+  }
+  
+  query += ' ORDER BY lastSeenAt;';
+  console.log(query);
+  connection.query(query, (err, results, fields) => {
+    if(err) {
+      callback(err, null);
+    } else {
+      callback(null, results);
+    }
+  });
+};
+
 module.exports = {
   registerCat,
   randomCat,
   checkPassword,
-  updateLastDate
+  updateLastDate,
+  selectCats
 };

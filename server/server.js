@@ -1,25 +1,11 @@
-const { registerCat, randomCat, checkPassword, updateLastDate } = require('./../database/index.js');
-const { cert } = require('./config.js');
+const { registerCat, randomCat, checkPassword, updateLastDate, selectCats } = require('./../database/index.js');
+const { cert, saltRounds } = require('./config.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const saltRounds = 10;
-
 const app = express();
-
-// const test = {
-//   addedAt: '2018-12-01',
-//   breed: 'Siamese',
-//   birthdate: '2018-01-01',
-//   imageUrl: 'http://honesttopaws.com/wp-content/uploads/sites/5/2017/05/banana-cat-1.png',
-//   lastSeenAt: '2018-12-12',
-//   name: 'Enji1',
-//   username: 'EnjiKim',
-//   password: 'ilovecats',
-//   weight: 100.33
-// }
 
 app.use(express.static('public'));
 
@@ -28,16 +14,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post('/cat/register', (req, res) => {
-  if (!req.body.name) return res.send('Name invalid');
-  if (!req.body.username) return res.send('Username invalid');
-  if (req.body.password < 8) return res.send('Password must be longer than 8 characters');
+  if (!req.body.name) return res.status(400).send('Name invalid');
+  if (!req.body.username) return res.status(400).send('Username invalid');
+  if (req.body.password < 8) return res.status(400).send('Password must be longer than 8 characters');
 
   bcrypt.hash(req.body.password, saltRounds, (hashErr, hash) => {
-    if (hashErr) return res.send(hashErr);
+    if (hashErr) return res.status(500).send(hashErr);
     req.body.password = hash;
     registerCat(req.body, (err, response) => {
-      if (err) return res.send(err);
-      return res.send(response);
+      if (err) return res.status(500).send(err);
+      return res.status(200).send(response);
     });
   });
 });
@@ -45,13 +31,13 @@ app.post('/cat/register', (req, res) => {
 
 app.put('/cat/login', (req, res) => {
   checkPassword(req.body, (err, response) => {
-    if (err) return res.send(err);
-    if (!response.length) return res.send('No such username');
+    if (err) return res.status(500).send(err);
+    if (!response.length) return res.status(400).send('No such username');
 
     bcrypt.compare(req.body.password, response[0].password, (err, resHash) => {
-      if (err) return res.send('Password Incorrect');
+      if (err) return res.status(400).send('Password Incorrect');
       updateLastDate(req.body.username, (err, resDate) => {
-        if (err) return res.send(err);
+        if (err) return res.status(500).send(err);
         let token = jwt.sign({ username: req.body.username, password: response[0].password }, cert, { algorithm: 'HS256', expiresIn: 86400 }, (err, token) => {
           return res.status(200).send({ auth: true, token });
         });
@@ -65,15 +51,17 @@ app.get('/cats', (req, res) => {
   let [ bearer, token ] = req.headers.authorization.split(' ');
   jwt.verify(token, cert, (err, decoded) => {
     if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
-    res.status(200).send(decoded);
+    selectCats(req.body, (err, response) => {
+      res.status(200).send(response);
+    })
   });
 });
 
 
 app.get('/cats/random', (req, res) => {
   randomCat((err, response) => {
-    if (err) return res.send(err);
-    return res.send(response);
+    if (err) return res.status(500).send(err);
+    return res.status(200).send(response);
   });
 });
 
