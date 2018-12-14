@@ -28,7 +28,30 @@ const randomCat = (callback) => {
   });
 };
 
+const checkPassword = ({ username }, callback) => {
+  connection.query(`SELECT password FROM cats WHERE username = '${username}';`, (err, results, fields) => {
+    if(err) {
+      callback(err, null);
+    } else {
+      callback(null, results);
+    }
+  });
+};
+
+const updateLastDate = ({ username }, callback) => {
+  let date = new Date().toISOString().slice(0,10);
+  connection.query(`UPDATE cats SET lastSeenAt = ${date} WHERE username = '${username}';`, (err, results, fields) => {
+    if(err) {
+      callback(err, null);
+    } else {
+      callback(null, results);
+    }
+  });
+};
+
 module.exports = {
   registerCat,
-  randomCat
+  randomCat,
+  checkPassword,
+  updateLastDate
 };
