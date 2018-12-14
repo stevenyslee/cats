@@ -50,7 +50,7 @@ app.put('/cat/login', (req, res) => {
 app.get('/cats', (req, res) => {
   let [ bearer, token ] = req.headers.authorization.split(' ');
   jwt.verify(token, cert, (err, decoded) => {
-    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+    if (err) return res.status(401).send({ auth: false, message: 'Failed to authenticate token.' });
     selectCats(req.body, (err, response) => {
       res.status(200).send(response);
     })
