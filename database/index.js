@@ -58,20 +58,17 @@ const selectCats = ({ id, name, username }, callback) => {
     } else {
       query += ` id IS NOT NULL`;
     }
-
     if (name) {
       query += ` AND name = '${name}'`;
     } else {
       query += ` AND name IS NOT NULL`;
     }
-
     if (username) {
       query += ` AND username = '${username}'`
     } else {
       query += ` AND username IS NOT NULL`;
     }
   }
-  
   query += ' ORDER BY lastSeenAt;';
   console.log(query);
   connection.query(query, (err, results, fields) => {

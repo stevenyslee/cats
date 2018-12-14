@@ -1,7 +1,5 @@
 node_modules
 *.DS_Store
-database/config.js
-server/config.js
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
